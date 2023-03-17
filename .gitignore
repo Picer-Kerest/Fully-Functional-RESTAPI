@@ -1,0 +1,13 @@
+*.log
+*.pot
+*.pyc
+__pycache__/
+local_settings.py
+.env
+text.txt
+*.sqlite3
+/db/*.sqlite3
+envir/
+views Helper.txt
+site hepler.txt
+real user.py
