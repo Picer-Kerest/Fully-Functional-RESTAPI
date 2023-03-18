@@ -35,6 +35,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_verified = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
+    is_admin = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -48,11 +49,14 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def tokens(self):
         """
-
+        Метод tokens возвращает словарь, содержащий два токена: refresh и access. Эти токены используются для
+        авторизации пользователей в Django REST framework. Когда пользователь отправляет запрос к API,
+        он должен предоставить токен доступа access, чтобы получить доступ к ресурсам API.
+        Если токен access истек или недействителен, можно использовать токен refresh,
+        чтобы получить новый токен access.
         """
         refresh = RefreshToken.for_user(self)
         return {
             'refresh': str(refresh),
             'access': str(refresh.access_token)
         }
-

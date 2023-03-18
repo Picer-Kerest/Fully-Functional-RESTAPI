@@ -22,11 +22,18 @@ from .utils import Util
 from django.shortcuts import redirect
 from django.http import HttpResponsePermanentRedirect
 import os
-from .serializers import EmailVerificationSerializer, RegisterSerializer, LoginSerializer
+from .serializers import (
+    EmailVerificationSerializer,
+    RegisterSerializer,
+    LoginSerializer,
+    ResetPasswordSerializer
+)
+from .renders import UserRender
 
 
 class RegisterView(GenericAPIView):
     serializer_class = RegisterSerializer
+    # renderer_classes = (UserRender, )
 
     def post(self, request):
         user = request.data
@@ -78,6 +85,20 @@ class LoginApiView(GenericAPIView):
     serializer_class = LoginSerializer
 
     def post(self, request):
+        """
+        serializer.data вернёт сериализованные данные в виде словаря,
+        в котором будут ключи 'email', 'username' и 'tokens',
+        соответствующие значениям, которые возвращаются из метода validate.
+        """
         serializer = self.serializer_class(data=request.data)
+        # Далее происходит валидация
         serializer.is_valid(raise_exception=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class ResetPasswordView(GenericAPIView):
+    serializer_class = ResetPasswordSerializer
+
+    def post(self, request):
+        pass
 

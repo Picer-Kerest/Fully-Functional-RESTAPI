@@ -46,8 +46,19 @@ class EmailVerificationSerializer(ModelSerializer):
 
 
 class LoginSerializer(ModelSerializer):
+    """
+    Пользователь может войти, но не может изменить username & tokens через API
+    write_only=True Делаем так, чтобы поле не возвращалось при сериализации объекта
+    """
     email = serializers.EmailField(max_length=255, min_length=5)
-    password = serializers.CharField(max_length=64, min_length=6)
+    username = serializers.CharField(max_length=64, min_length=3, read_only=True)
+    password = serializers.CharField(max_length=64, min_length=6, write_only=True)
+    tokens = serializers.CharField(max_length=255, min_length=6, read_only=True)
+
+    class Meta:
+        model = User
+        fields = ['email', 'username', 'password', 'tokens']
+    #     Какие поля будут сериализованы
 
     def validate(self, attrs):
         email = attrs.get('email', '')
@@ -65,5 +76,14 @@ class LoginSerializer(ModelSerializer):
         return {
             'email': user.email,
             'username': user.username,
+            'tokens': user.tokens
         }
+
+
+class ResetPasswordSerializer(ModelSerializer):
+    email = serializers.EmailField(min_length=5)
+
+    class Meta:
+        fields = ['email']
+
 
