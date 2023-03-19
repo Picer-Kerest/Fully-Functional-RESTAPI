@@ -26,7 +26,8 @@ from .serializers import (
     EmailVerificationSerializer,
     RegisterSerializer,
     LoginSerializer,
-    ResetPasswordSerializer
+    ResetPasswordSerializer,
+    SetNewPasswordSerializer
 )
 from .renders import UserRender
 
@@ -96,9 +97,62 @@ class LoginApiView(GenericAPIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class ResetPasswordView(GenericAPIView):
+class ResetPasswordStartView(GenericAPIView):
     serializer_class = ResetPasswordSerializer
 
     def post(self, request):
-        pass
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        email = request.data['email']
+        if User.objects.filter(email=email).exists():
+            user = User.objects.get(email=email)
+            uidb64 = urlsafe_base64_encode(smart_bytes(user.id))
+            token = PasswordResetTokenGenerator().make_token(user)
+            domain = get_current_site(request).domain
+            relative_link = reverse('reset-password-done', kwargs={
+                'uidb64': uidb64,
+                'token': token
+            })
+            activate_url = f'http://{domain}{relative_link}'
+            email_body = f'Hi, {user.username}. Please use this link to reset your password\n{activate_url}'
+            data = {
+                'email_subject': 'Set New Password link',
+                'email_body': email_body,
+                'to_email': user.email}
+            Util.send_email(data)
+            return Response({'success': 'We have sent you a link to reset your password'}, status=status.HTTP_200_OK)
+        return Response({'error': 'There is no user with this email'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ResetPasswordDoneView(GenericAPIView):
+    serializer_class = SetNewPasswordSerializer
+
+    def get(self, request, uidb64, token):
+        try:
+            # force_str instead smart_str. For Django > 3.1
+            user_id = force_str(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(id=user_id)
+            if not PasswordResetTokenGenerator().check_token(user, token):
+                return Response(
+                    {'error': 'Token is not valid, please request a new one'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({
+                    'success': True,
+                    'message': 'Credentials is valid',
+                    'uidb64': uidb64,
+                    'token': token}, status=status.HTTP_200_OK)
+        except DjangoUnicodeDecodeError as ex:
+            return Response(
+                {'error': 'Token is not valid, please request a new one'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class SetNewPasswordView(GenericAPIView):
+    serializer_class = SetNewPasswordSerializer
+
+    def patch(self, request):
+        # Частичное обновление ресурса
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        return Response({'success': True, 'message': 'Password changed successfully'}, status=status.HTTP_200_OK)
+
 
