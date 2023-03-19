@@ -7,12 +7,14 @@ from .views import (
     ResetPasswordStartView,
     ResetPasswordDoneView,
     SetNewPasswordView,
+    LogoutView,
 )
 
 
 urlpatterns = [
     path('register/', RegisterView.as_view(), name='register'),
     path('login/', LoginApiView.as_view(), name='login'),
+    path('logout/', LogoutView.as_view(), name='logout'),
     path('email-verify/', VerifyEmail.as_view(), name='email-verify'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('start-reset-password/', ResetPasswordStartView.as_view(), name='reset-password-start'),

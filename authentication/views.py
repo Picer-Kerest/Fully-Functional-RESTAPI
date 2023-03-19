@@ -1,35 +1,28 @@
-from django.shortcuts import render
-from rest_framework import generics, status, views, permissions
+from rest_framework import status
 from rest_framework.generics import GenericAPIView
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from .models import User
-from .utils import Util
-from django.contrib.sites.shortcuts import get_current_site
-from django.urls import reverse
 import jwt
 from django.conf import settings
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
-# from .renderers import UserRenderer
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
-from django.utils.encoding import smart_str, force_str, smart_bytes, DjangoUnicodeDecodeError
+from django.utils.encoding import force_str, smart_bytes, DjangoUnicodeDecodeError
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.contrib.sites.shortcuts import get_current_site
 from django.urls import reverse
 from .utils import Util
-from django.shortcuts import redirect
-from django.http import HttpResponsePermanentRedirect
-import os
 from .serializers import (
     EmailVerificationSerializer,
     RegisterSerializer,
     LoginSerializer,
     ResetPasswordSerializer,
-    SetNewPasswordSerializer
+    SetNewPasswordSerializer,
+    LogoutSerializer
 )
-from .renders import UserRender
 
 
 class RegisterView(GenericAPIView):
@@ -148,6 +141,7 @@ class ResetPasswordDoneView(GenericAPIView):
 
 class SetNewPasswordView(GenericAPIView):
     serializer_class = SetNewPasswordSerializer
+    permission_classes = (IsAuthenticated, )
 
     def patch(self, request):
         # Частичное обновление ресурса
@@ -156,3 +150,13 @@ class SetNewPasswordView(GenericAPIView):
         return Response({'success': True, 'message': 'Password changed successfully'}, status=status.HTTP_200_OK)
 
 
+class LogoutView(GenericAPIView):
+    serializer_class = LogoutSerializer
+    permission_classes = (IsAuthenticated, )
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response({'success': 'You were logged out'}, status=status.HTTP_204_NO_CONTENT)

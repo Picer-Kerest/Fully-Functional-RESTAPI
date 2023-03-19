@@ -1,8 +1,4 @@
-from django.shortcuts import render
-from rest_framework.mixins import (
-    ListModelMixin, CreateModelMixin, RetrieveModelMixin,
-    UpdateModelMixin, DestroyModelMixin)
-from rest_framework.generics import GenericAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import IsAuthenticated
 from .serializers import IncomesSerializers
 from .models import Income
@@ -29,7 +25,7 @@ class IncomesList(ListCreateAPIView):
 class IncomeDetailView(RetrieveUpdateDestroyAPIView):
     serializer_class = IncomesSerializers
     queryset = Income.objects.all()
-    permission_classes = (IsOwner, IsAuthenticated)
+    permission_classes = (IsOwner, IsAuthenticated, )
     lookup_field = 'id'
     # Поле модели, которое следует использовать для
     # поиска объектов отдельных экземпляров модели. По умолчанию 'pk'

@@ -18,7 +18,7 @@ class Expense(models.Model):
     "max_digits" определяет максимальное количество цифр, которые могут быть хранены в этом поле. 
     Параметр "decimal_places" определяет количество цифр после запятой.
     """
-    description = models.TextField()
+    description = models.TextField(null=True, blank=True)
     owner = models.ForeignKey(to=User, on_delete=models.CASCADE)
     date = models.DateField(null=False, blank=False)
     created_at = models.DateTimeField(auto_now_add=True)

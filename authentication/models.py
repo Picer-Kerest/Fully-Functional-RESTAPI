@@ -1,5 +1,4 @@
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
-from django.contrib.auth.hashers import make_password, identify_hasher
 from django.contrib.auth.models import PermissionsMixin
 from django.db import models
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -22,7 +21,7 @@ class UserManager(BaseUserManager):
         if password is None:
             raise TypeError('Password should not be none')
 
-        user = self.create_user(username, email, password)
+        user = self.create_user(email, username, password)
         user.is_superuser = True
         user.is_staff = True
         user.save(using=self._db)
