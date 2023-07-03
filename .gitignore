@@ -3,7 +3,6 @@
 *.pyc
 __pycache__/
 local_settings.py
-.env
 text.txt
 *.sqlite3
 /db/*.sqlite3
@@ -17,3 +16,4 @@ email_test.py
 garbage/
 utils/
 docker helper.txt
+env_file.txt
